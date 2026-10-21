@@ -17,12 +17,20 @@ Car listing marketplace built with Laravel 9.
    - `storage/framework/`
    - `storage/logs/`
    - `bootstrap/cache/`
-4. Open `/install` in your browser.
-5. Follow the wizard:
+4. Create an empty MySQL database (phpMyAdmin is fine on XAMPP).
+5. Open `/install` in your browser.
+6. Follow the wizard:
    - Server requirements
    - Folder permissions
    - App name, URL, and database credentials
-6. After installation, log in at `/admin`.
+7. After installation, log in at `/admin`.
+
+XAMPP notes:
+
+- Use host `127.0.0.1` and username `root`.
+- Leave the database password empty unless you set one in phpMyAdmin.
+- Do not type `null` in the password field.
+- If import fails with "MySQL server has gone away", increase `max_allowed_packet` in `C:\xampp\mysql\bin\my.ini` to `64M` and restart MySQL.
 
 Default admin credentials from the seed data:
 

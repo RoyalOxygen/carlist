@@ -100,7 +100,11 @@ class EnvironmentManager
         $dbHost = $request->database_hostname;
         $dbName = $request->database_name;
         $dbUser = $request->database_username;
-        $dbPass = str_replace('"', '\"', (string) $request->database_password);
+        $dbPass = trim((string) $request->database_password);
+        if (strcasecmp($dbPass, 'null') === 0) {
+            $dbPass = '';
+        }
+        $dbPass = str_replace('"', '\"', $dbPass);
 
         $envFileData =
         'APP_NAME=\''.$appName."'\n".

@@ -55,9 +55,9 @@ return [
      *
      */
     'license' => [
-        'templateTitle' => 'Step 3 | License Verification',
-        'title' => 'License Verifications',
-        'next' => 'Verify',
+        'templateTitle' => 'Step 3 | Configuration',
+        'title' => 'Configuration',
+        'next' => 'Continue',
     ],
 
     /*
@@ -74,7 +74,7 @@ return [
             'classic-button' => 'Classic Text Editor',
         ],
         'wizard' => [
-            'templateTitle' => 'Step 4 | Environment & Database Setup',
+            'templateTitle' => 'Step 3 | Environment & Database Setup',
             'title' => 'Environment & Database Setup',
             'tabs' => [
                 'environment' => 'Environment',

@@ -578,7 +578,7 @@ class CarController extends Controller
       $price_cars = DB::table('cars')
         ->select('*')
         ->where('price', '>=', $min)
-        ->where('price', '<=', DB::raw($max))
+        ->where('price', '<=', $max)
         ->get();
       foreach ($price_cars as $car) {
         if (!in_array($car->id, $priceIds)) {
@@ -660,22 +660,22 @@ class CarController extends Controller
       $radius = $bs->radius / 1000;
 
       $query->selectRaw("
-        'cars.*,
-      car_contents.title,
-      car_contents.brand_id,
-      car_contents.car_model_id,
-      car_contents.slug,
-      car_contents.category_id,
-      car_contents.description,
-      cities.name as city_name,
-      states.name as state_name,
-      countries.name as country_name,
-      categories.name as category_name,
-      car_conditions.name as car_condition,
-      brands.name as brand_name,
-      car_models.name as car_model,
-      fuel_types.name as fuel_type,
-      transmission_types.name as transmission_type
+        cars.*,
+        car_contents.title,
+        car_contents.brand_id,
+        car_contents.car_model_id,
+        car_contents.slug,
+        car_contents.category_id,
+        car_contents.description,
+        cities.name as city_name,
+        states.name as state_name,
+        countries.name as country_name,
+        categories.name as category_name,
+        car_conditions.name as car_condition,
+        brands.name as brand_name,
+        car_models.name as car_model,
+        fuel_types.name as fuel_type,
+        transmission_types.name as transmission_type,
         (
             6371 * acos(
                 cos(radians(?)) *

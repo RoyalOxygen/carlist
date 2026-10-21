@@ -26,7 +26,7 @@
     </blockquote>
 
 	<p><strong><small>{{ trans('installer_messages.final.env') }}</small></strong></p>
-	<pre><code>{{ $finalEnvFile }}</code></pre>
+	<pre><code>Environment file written successfully. Secrets are not displayed here.</code></pre>
 
     <div class="buttons">
         <a href="{{ url('/') }}" class="button">{{ trans('installer_messages.final.exit') }}</a>

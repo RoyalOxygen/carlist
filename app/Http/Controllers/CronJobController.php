@@ -15,8 +15,13 @@ use Illuminate\Http\Request;
 
 class CronJobController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $cronSecret = env('CRON_SECRET');
+        if (!empty($cronSecret) && $request->query('secret') !== $cronSecret) {
+            abort(403);
+        }
+
         try {
             $bs = Basic::first();
 

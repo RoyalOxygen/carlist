@@ -1,31 +1,24 @@
 <?php
 header("Content-Type:text/css");
 
-// get the colors from query parameter
-$primaryColor = $_GET['primary_color'];
-$secondaryColor = $_GET['secondary_color'];
-$breadcrumbOverlayColor = $_GET['breadcrumb_overlay_color'];
-
-// check, whether color has '#' or not, will return 0 or 1
-function checkColorCode($color)
+function sanitizeColor($color, $fallback = '#000000')
 {
-  return preg_match('/^#[a-f0-9]{6}/i', $color);
+  $color = is_string($color) ? trim($color) : '';
+
+  if ($color !== '' && $color[0] !== '#') {
+    $color = '#' . $color;
+  }
+
+  if (preg_match('/^#[a-f0-9]{6}$/i', $color)) {
+    return $color;
+  }
+
+  return $fallback;
 }
 
-// if, primary color value does not contain '#', then add '#' before color value
-if (isset($primaryColor) && (checkColorCode($primaryColor) == 0)) {
-  $primaryColor = '#' . $primaryColor;
-}
-
-// if, secondary color value does not contain '#', then add '#' before color value
-if (isset($secondaryColor) && (checkColorCode($secondaryColor) == 0)) {
-  $secondaryColor = '#' . $secondaryColor;
-}
-
-// if, breadcrumb overlay color value does not contain '#', then add '#' before color value
-if (isset($breadcrumbOverlayColor) && (checkColorCode($breadcrumbOverlayColor) == 0)) {
-  $breadcrumbOverlayColor = '#' . $breadcrumbOverlayColor;
-}
+$primaryColor = sanitizeColor($_GET['primary_color'] ?? '');
+$secondaryColor = sanitizeColor($_GET['secondary_color'] ?? '');
+$breadcrumbOverlayColor = sanitizeColor($_GET['breadcrumb_overlay_color'] ?? '');
 
 // then add color to style
 ?>

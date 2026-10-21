@@ -21,7 +21,6 @@ class VerifyCsrfToken extends Middleware
     '/equipment/make-booking/razorpay/notify',
     '/equipment/make-booking/flutterwave/notify',
     '/equipment/make-booking/paytm/notify',
-    '/admin/menu-builder/update-menus',
     '/push-notification/store-endpoint',
     'shop/update-cart',
 

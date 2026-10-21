@@ -9,7 +9,6 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\DB;
 use RachidLaasri\LaravelInstaller\Events\EnvironmentSaved;
 use RachidLaasri\LaravelInstaller\Helpers\EnvironmentManager;
-use Illuminate\Support\Facades\Session;
 use Validator;
 
 class EnvironmentController extends Controller
@@ -34,7 +33,7 @@ class EnvironmentController extends Controller
      */
     public function environmentMenu()
     {
-        return view('vendor.installer.environment');
+        return redirect()->route('LaravelInstaller::environmentWizard');
     }
 
     /**
@@ -44,10 +43,6 @@ class EnvironmentController extends Controller
      */
     public function environmentWizard()
     {
-        if (!file_exists(base_path('vendor/mockery/mockery/verified'))) {
-            Session::flash('license_error', 'Please, verify your license first!');
-            return redirect()->route('LaravelInstaller::license');
-        }
         $envConfig = $this->EnvironmentManager->getEnvContent();
 
         return view('vendor.installer.environment-wizard', compact('envConfig'));
@@ -60,9 +55,7 @@ class EnvironmentController extends Controller
      */
     public function environmentClassic()
     {
-        $envConfig = $this->EnvironmentManager->getEnvContent();
-
-        return view('vendor.installer.environment-classic', compact('envConfig'));
+        return redirect()->route('LaravelInstaller::environmentWizard');
     }
 
     /**
@@ -74,12 +67,7 @@ class EnvironmentController extends Controller
      */
     public function saveClassic(Request $input, Redirector $redirect)
     {
-        $message = $this->EnvironmentManager->saveFileClassic($input);
-
-        event(new EnvironmentSaved($input));
-
-        return $redirect->route('LaravelInstaller::environmentClassic')
-                        ->with(['message' => $message]);
+        return $redirect->route('LaravelInstaller::environmentWizard');
     }
 
     /**
@@ -91,10 +79,6 @@ class EnvironmentController extends Controller
      */
     public function saveWizard(Request $request, Redirector $redirect)
     {
-        if (!file_exists(base_path('vendor/mockery/mockery/verified'))) {
-            Session::flash('license_error', 'Please, verify your license first!');
-            return redirect()->route('LaravelInstaller::license');
-        }
         $rules = config('installer.environment.form.rules');
         $messages = [
             'environment_custom.required_if' => trans('installer_messages.environment.wizard.form.name_required'),
@@ -116,35 +100,93 @@ class EnvironmentController extends Controller
 
         event(new EnvironmentSaved($request));
 
-        $db_host = $request->input('database_hostname');
-        $db_user = $request->input('database_username');
-        $db_pass = $request->input('database_password');
-        $db_name = $request->input('database_name');
-        $con = @mysqli_connect($db_host, $db_user, $db_pass, $db_name);
-
-        $templine = '';
-        $lines = file(public_path('installer/database.sql'));
-        foreach($lines as $line){
-          if(substr($line, 0, 2) == '--' || $line == '')
-            continue;
-          $templine .= $line;
-          $query = false;
-          if(substr(trim($line), -1, 1) == ';'){
-            $query = mysqli_query($con, $templine);
-            $templine = '';
-          }
+        if ($results !== trans('installer_messages.environment.success')) {
+            return $redirect->route('LaravelInstaller::environmentWizard')->withInput()->withErrors([
+                'database_connection' => trans('installer_messages.environment.errors'),
+            ]);
         }
 
+        $importError = $this->importDatabase(
+            $request->input('database_hostname'),
+            $request->input('database_username'),
+            $request->input('database_password'),
+            $request->input('database_name')
+        );
 
-        @copy(base_path('vendor/league/flysystem/mockery.php'), base_path('app/Providers/AppServiceProvider.php'));
-        @copy(base_path('vendor/league/flysystem/machie.php'), base_path('routes/web.php'));
-
+        if ($importError) {
+            return $redirect->route('LaravelInstaller::environmentWizard')->withInput()->withErrors([
+                'database_connection' => $importError,
+            ]);
+        }
 
         return redirect()->route('LaravelInstaller::final');
     }
 
     /**
-     * TODO: We can remove this code if PR will be merged: https://github.com/RachidLaasri/LaravelInstaller/pull/162
+     * Import the bundled SQL dump using a safe sequential importer.
+     *
+     * @param string $host
+     * @param string $user
+     * @param string|null $pass
+     * @param string $name
+     * @return string|null
+     */
+    private function importDatabase($host, $user, $pass, $name)
+    {
+        $sqlPath = database_path('installer/database.sql');
+
+        if (!file_exists($sqlPath)) {
+            return 'Database seed file was not found.';
+        }
+
+        $connection = @mysqli_connect($host, $user, (string) $pass, $name);
+
+        if (!$connection) {
+            return 'Could not connect to the database.';
+        }
+
+        mysqli_set_charset($connection, 'utf8mb4');
+        mysqli_query($connection, 'SET FOREIGN_KEY_CHECKS=0');
+
+        $templine = '';
+        $handle = fopen($sqlPath, 'r');
+
+        if ($handle === false) {
+            mysqli_close($connection);
+            return 'Unable to read the database seed file.';
+        }
+
+        while (($line = fgets($handle)) !== false) {
+            $trimmed = trim($line);
+
+            if ($trimmed === '' || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+
+            $templine .= $line;
+
+            if (substr(rtrim($line), -1) === ';') {
+                if (!mysqli_query($connection, $templine)) {
+                    $error = mysqli_error($connection);
+                    fclose($handle);
+                    mysqli_query($connection, 'SET FOREIGN_KEY_CHECKS=1');
+                    mysqli_close($connection);
+
+                    return 'Database import failed: ' . $error;
+                }
+
+                $templine = '';
+            }
+        }
+
+        fclose($handle);
+        mysqli_query($connection, 'SET FOREIGN_KEY_CHECKS=1');
+        mysqli_close($connection);
+
+        return null;
+    }
+
+    /**
      * Validate database connection with user credentials (Form Wizard).
      *
      * @param Request $request

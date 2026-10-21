@@ -27,6 +27,10 @@ class ImageMimeTypeRule implements Rule
    */
   public function passes($attribute, $value)
   {
+    if (!$value || !is_object($value) || !method_exists($value, 'getClientOriginalExtension')) {
+      return false;
+    }
+
     $image = $value;
 
     if (
@@ -38,13 +42,23 @@ class ImageMimeTypeRule implements Rule
       $allowedExtensions = array('jpg', 'jpeg', 'png');
     }
 
-    $fileExtension = $image->getClientOriginalExtension();
+    $fileExtension = strtolower($image->getClientOriginalExtension());
 
-    if (in_array($fileExtension, $allowedExtensions)) {
-      return true;
-    } else {
+    if (!in_array($fileExtension, $allowedExtensions, true)) {
       return false;
     }
+
+    $mime = strtolower((string) $image->getMimeType());
+    $allowedMimes = [
+      'jpg' => ['image/jpeg'],
+      'jpeg' => ['image/jpeg'],
+      'png' => ['image/png'],
+      'gif' => ['image/gif'],
+      'svg' => ['image/svg+xml', 'text/svg+xml'],
+      'webp' => ['image/webp'],
+    ];
+
+    return isset($allowedMimes[$fileExtension]) && in_array($mime, $allowedMimes[$fileExtension], true);
   }
 
   /**

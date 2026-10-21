@@ -302,7 +302,7 @@ class CarController extends Controller
             $price_cars = DB::table('cars')
                 ->select('*')
                 ->where('price', '>=', $min)
-                ->where('price', '<=', DB::raw($max))
+                ->where('price', '<=', $max)
                 ->get();
             foreach ($price_cars as $car) {
                 if (!in_array($car->id, $priceIds)) {

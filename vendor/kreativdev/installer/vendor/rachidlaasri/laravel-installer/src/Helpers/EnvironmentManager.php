@@ -94,35 +94,44 @@ class EnvironmentManager
     {
         $results = trans('installer_messages.environment.success');
 
+        $appName = addslashes($request->app_name);
+        $appDebug = $request->app_debug === 'true' || $request->app_debug === true ? 'true' : 'false';
+        $appUrl = rtrim($request->app_url, '/');
+        $dbHost = $request->database_hostname;
+        $dbName = $request->database_name;
+        $dbUser = $request->database_username;
+        $dbPass = str_replace('"', '\"', (string) $request->database_password);
+
         $envFileData =
-        'APP_NAME=\''.$request->app_name."'\n".
-        'APP_ENV='.$request->environment."\n".
-        'APP_KEY='.'base64:'.base64_encode(Str::random(32))."\n".
-        'APP_DEBUG='.$request->app_debug."\n".
-        'APP_LOG_LEVEL='.$request->app_log_level."\n".
-        'APP_URL='.$request->app_url."\n\n".
-        'DB_CONNECTION='.$request->database_connection."\n".
-        'DB_HOST='.$request->database_hostname."\n".
-        'DB_PORT='.$request->database_port."\n".
-        'DB_DATABASE='.$request->database_name."\n".
-        'DB_USERNAME='.$request->database_username."\n".
-        'DB_PASSWORD='.$request->database_password."\n\n".
-        'BROADCAST_DRIVER='.$request->broadcast_driver."\n".
-        'CACHE_DRIVER='.$request->cache_driver."\n".
-        'SESSION_DRIVER='.$request->session_driver."\n".
-        'QUEUE_DRIVER='.$request->queue_driver."\n\n".
-        'REDIS_HOST='.$request->redis_hostname."\n".
-        'REDIS_PASSWORD='.$request->redis_password."\n".
-        'REDIS_PORT='.$request->redis_port."\n\n".
-        'MAIL_DRIVER='.$request->mail_driver."\n".
-        'MAIL_HOST='.$request->mail_host."\n".
-        'MAIL_PORT='.$request->mail_port."\n".
-        'MAIL_USERNAME='.$request->mail_username."\n".
-        'MAIL_PASSWORD='.$request->mail_password."\n".
-        'MAIL_ENCRYPTION='.$request->mail_encryption."\n\n".
-        'PUSHER_APP_ID='.$request->pusher_app_id."\n".
-        'PUSHER_APP_KEY='.$request->pusher_app_key."\n".
-        'PUSHER_APP_SECRET='.$request->pusher_app_secret;
+        'APP_NAME=\''.$appName."'\n".
+        'APP_ENV=local'."\n".
+        'APP_KEY=base64:'.base64_encode(Str::random(32))."\n".
+        'APP_DEBUG='.$appDebug."\n".
+        'APP_URL='.$appUrl."\n\n".
+        'LOG_CHANNEL=stack'."\n\n".
+        'DB_CONNECTION=mysql'."\n".
+        'DB_HOST='.$dbHost."\n".
+        'DB_PORT=3306'."\n".
+        'DB_DATABASE='.$dbName."\n".
+        'DB_USERNAME='.$dbUser."\n".
+        'DB_PASSWORD="'.$dbPass.'"'."\n\n".
+        'BROADCAST_DRIVER=log'."\n".
+        'CACHE_DRIVER=file'."\n".
+        'QUEUE_CONNECTION=sync'."\n".
+        'SESSION_DRIVER=file'."\n".
+        'SESSION_LIFETIME=120'."\n\n".
+        'REDIS_HOST=127.0.0.1'."\n".
+        'REDIS_PASSWORD=null'."\n".
+        'REDIS_PORT=6379'."\n\n".
+        'MAIL_MAILER=smtp'."\n".
+        'MAIL_HOST=smtp.mailtrap.io'."\n".
+        'MAIL_PORT=2525'."\n".
+        'MAIL_USERNAME=null'."\n".
+        'MAIL_PASSWORD=null'."\n".
+        'MAIL_ENCRYPTION=null'."\n\n".
+        'PUSHER_APP_ID='."\n".
+        'PUSHER_APP_KEY='."\n".
+        'PUSHER_APP_SECRET='."\n";
 
         try {
             file_put_contents($this->envPath, $envFileData);

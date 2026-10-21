@@ -115,7 +115,7 @@ class MobileInterfaceController extends Controller
 
     $publicConfig = include base_path('public/config.php');
     $publicConfig['PUBLIC_API_BASE'] = $request->api_base_url;
-    $configContent = "<?php\n\nreturn " . var_export($publicConfig, true) . ";\n";
+    $configContent = "<?php\n\nif (isset(\$_SERVER['SCRIPT_FILENAME']) && realpath(\$_SERVER['SCRIPT_FILENAME']) === __FILE__) {\n    http_response_code(403);\n    exit;\n}\n\nreturn " . var_export($publicConfig, true) . ";\n";
     file_put_contents(base_path('public/config.php'), $configContent);
 
 

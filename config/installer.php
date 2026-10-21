@@ -19,6 +19,9 @@ return [
         'key' => true,
         'publish' => false,
     ],
+    'item_name' => 'Carlist',
+    'version' => '3.6',
+    'released_on' => '25th Dec, 2025',
     'requirements' => [
         'php' => [
             'mysqli',
@@ -30,7 +33,7 @@ return [
             'cURL',
             'fileinfo',
             'exif',
-            'gmp'
+            'gmp',
         ],
     ],
 
@@ -105,7 +108,7 @@ return [
     | route, abort, dump, 404, default, ''
     |
     */
-    'installedAlreadyAction' => '',
+    'installedAlreadyAction' => '404',
 
     /*
     |--------------------------------------------------------------------------
@@ -116,6 +119,6 @@ return [
     | Boolean value
     |
     */
-    'updaterEnabled' => 'true',
+    'updaterEnabled' => false,
 
 ];
